@@ -1,9 +1,63 @@
-name: test
-on: push
+name: Test Bitcoin Publisher
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - name: All test
-      run: bash -xv ./test.bash
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up ROS 2
+      uses: ros-tooling/setup-ros@v0.3
+      with:
+        version: humble  # Adjust based on your ROS 2 distribution
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-pip
+        pip3 install requests
+
+    - name: Build workspace
+      run: |
+        colcon build
+
+    - name: Source ROS 2 workspace
+      run: |
+        source /opt/ros/humble/setup.bash
+        source install/setup.bash
+
+    - name: Run bitcoin_publisher test
+      run: |
+        # Start ROS 2 testing environment
+        source /opt/ros/humble/setup.bash
+        source install/setup.bash
+
+        # Test bitcoin_publisher node
+        ros2 run homework bitcoin_publisher &
+        PUBLISHER_PID=$!
+
+        # Allow the publisher to run briefly
+        sleep 15
+
+        # Check if node is publishing correctly
+        if ros2 topic echo /bitcoin_price -n1 | grep -q "data:"; then
+          echo "Test passed: bitcoin_publisher is publishing data."
+        else
+          echo "Test failed: No data published on /bitcoin_price."
+          kill $PUBLISHER_PID
+          exit 1
+        fi
+
+        # Clean up
+        kill $PUBLISHER_PID
+
