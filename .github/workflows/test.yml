@@ -19,7 +19,7 @@ jobs:
     - name: Set up ROS 2
       uses: ros-tooling/setup-ros@v0.3
       with:
-        version: humble  # Adjust based on your ROS 2 distribution
+        requested-ros-distributions: foxy  # Adjust based on your ROS 2 distribution
 
     - name: Install dependencies
       run: |
