@@ -1,53 +1,13 @@
-name: ROS2 Bitcoin Publisher Test
-
-on: [push]
-
+name: test
+on: push
 jobs:
   test:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu 22.04
+    container: ryuichiueda/ubuntu22.04-ros2:latest
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v2
-
-    - name: Set up ROS 2
+      - uses: actions/checkout@v2
+      -name: build and test
       run: |
-        # Install dependencies
-        sudo apt update
-        sudo apt install -y curl gnupg2 lsb-release python3-pip python3-rosdep python3-rosinstall-generator build-essential
-
-        # Set up ROS 2 repository for ROS 2 Humble (update if needed for your ROS 2 version)
-        sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key | sudo tee /etc/apt/trusted.gpg.d/ros.asc
-        sudo sh -c 'echo "deb [arch=amd64,arm64,armhf] https://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2.list'
-
-        # Update apt package list
-        sudo apt update
-
-        # Install necessary ROS 2 packages
-        sudo apt install -y python3-vcstool python3-rosdep python3-colcon-common-extensions
-
-        # Initialize rosdep
-        sudo rosdep init
-        rosdep update
-
-    - name: Install Python dependencies
-      run: |
-        # Set up Python virtual environment
-        python3 -m venv venv
-        source venv/bin/activate
-        pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install requests
-
-    - name: Build ROS 2 workspace
-      run: |
-        source /opt/ros/humble/setup.bash
-        colcon build
-
-    - name: Run tests
-      run: |
-        # Run the ROS 2 node
-        source venv/bin/activate
-        source install/setup.bash
-        ros2 run homework bitcoin_publisher
-
+        rsync -av ./ /root/ros2_ws/src/homework/
+        cd /root/ros2_ws
+        bash -xv ./src/homework/test/test.bash /root
