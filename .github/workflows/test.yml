@@ -14,11 +14,13 @@ jobs:
       run: |
         # Install dependencies
         sudo apt update
-        sudo apt install -y curl gnupg2 lsb-release python3-vcstool build-essential python3-pip python3-rosdep python3-rosinstall-generator
+        sudo apt install -y curl gnupg2 lsb-release python3-pip python3-rosdep python3-rosinstall-generator build-essential
 
-        # Install ROS 2
-        curl -sSL https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos -o ros2.repos
+        # Set up ROS 2 repository
+        sudo curl -sSL http://repos.ros.org/repos/ros2/ros2.repos -o ros2.repos
         vcs import src < ros2.repos
+
+        # Install ROS 2 dependencies
         sudo rosdep init
         rosdep update
 
